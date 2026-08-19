@@ -194,6 +194,19 @@ svg{display:block}
 .toast small{color:var(--dim);font-size:12px;display:block;margin-top:2px;line-height:1.4}
 .toast .xclose{margin-left:auto;background:transparent;color:var(--dim);width:20px;height:20px;display:grid;place-items:center;flex-shrink:0;font-size:16px;line-height:1}
 .toast .xclose:hover{color:#fff}
+
+/* ---------- fixtures / bracket ---------- */
+.champbanner{background:linear-gradient(100deg,var(--yellow),var(--green) 55%,var(--red));color:#0A0A0A;font-family:'Fredoka';font-weight:700;font-size:16px;text-align:center;padding:14px;border-radius:16px;margin-bottom:18px}
+.fxgroup{margin-bottom:22px}
+.fxgroup h4{font-family:'Fredoka';font-weight:600;font-size:14px;margin-bottom:10px;color:var(--dim);letter-spacing:.02em}
+.fxlist{display:flex;flex-direction:column;gap:8px}
+.fxrow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;flex-wrap:wrap}
+.fxcar{flex:1;min-width:130px;font-size:13px;font-weight:600;padding:9px 10px;border-radius:10px;text-align:center;background:var(--bg2);border:1px solid var(--line);transition:.14s}
+.fxcar.winner{background:linear-gradient(100deg,var(--yellow),var(--green));color:#0A0A0A;border-color:transparent}
+.fxcar.loser{opacity:.5}
+.fxcar.pick{cursor:pointer}
+.fxcar.pick:hover{border-color:var(--green);color:var(--green)}
+.fxvs{color:var(--dim);font-size:10.5px;font-weight:700;letter-spacing:.06em;flex-shrink:0}
 .tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--rlg)}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
 th{text-align:left;padding:13px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);white-space:nowrap;font-weight:600}
@@ -327,6 +340,14 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
       <h2>THE <span class="grad">GRID</span></h2>
       <p>Everyone signed up for the Corsa Event</p>
     </div>
+    <div id="fixturesWrap" style="display:none;margin-bottom:26px">
+      <div class="colhead" style="margin-bottom:12px">
+        <span class="pill" style="background:rgba(255,59,59,.1);color:var(--red);border-color:rgba(255,59,59,.3)">🏁 Race Control</span>
+        <h2>RACE FIXTURES</h2>
+        <p class="sub">Round robin, then knockout. Updated live.</p>
+      </div>
+      <div id="fixturesList"></div>
+    </div>
     <div id="dragboardWrap" style="display:none;margin-bottom:26px">
       <div class="colhead" style="margin-bottom:12px">
         <span class="pill" style="background:rgba(255,224,27,.1);color:var(--yellow);border-color:rgba(255,224,27,.3)">🏁 Dragy</span>
@@ -399,6 +420,7 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
       <button onclick="showTab('marshalls',this)">Marshalls<span class="dot" id="admdot-marshalls" style="display:none"></span></button>
       <button onclick="showTab('safety',this)">Safety cars<span class="dot" id="admdot-safety" style="display:none"></span></button>
       <button onclick="showTab('drag',this)">Drag Times<span class="dot" id="admdot-drag" style="display:none"></span></button>
+      <button onclick="showTab('fixtures',this)">Fixtures</button>
       <button onclick="showTab('logins',this)">Logins</button>
     </div>
     <div class="tablewrap" id="adminTable"></div>
@@ -417,6 +439,8 @@ async function sbInsert(t,row){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{met
 async function sbSelect(t,q="",sel="*"){const r=await fetch(`${SB_URL}/rest/v1/${t}?select=${encodeURIComponent(sel)}${q}&order=created_at.desc`,{headers:H});if(!r.ok)throw new Error("Load failed ("+r.status+")");return r.json();}
 async function sbUpdate(t,id,patch){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"PATCH",headers:{...H,"Prefer":"return=representation"},body:JSON.stringify(patch)});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Update failed (${r.status})${d?": "+d:""}`);}return (await r.json())[0];}
 async function sbDelete(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"DELETE",headers:H});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Delete failed (${r.status})${d?": "+d:""}`);}}
+async function sbInsertMany(t,rows){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:{...H,"Prefer":"return=representation"},body:JSON.stringify(rows)});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Save failed (${r.status})${d?": "+d:""}`);}return r.json();}
+async function sbDeleteAll(t){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=not.is.null`,{method:"DELETE",headers:H});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Delete failed (${r.status})${d?": "+d:""}`);}}
 
 const AVATAR_POOL=[1,156,261,913062,68465808,23415609,21557,80254,1179762,4416324,8368923,343,1210210,13645,2231221,111179700,159876990,29317340,52988,20048521];
 const fallbackAvatar=s=>`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(s)}&backgroundColor=111111`;
@@ -669,16 +693,159 @@ function showStatus(){
   window.scrollTo(0,0);
 }
 
+/* ---------- fixtures / bracket ---------- */
+const FIXTURE_SEL="*,car1:car1_id(car_name,real_name,car_class),car2:car2_id(car_name,real_name,car_class)";
+function generateRoundRobin(ids){
+  const n=ids.length;
+  if(n<2)return[];
+  let arr=ids.slice();
+  if(arr.length%2)arr.push(null);
+  const m=arr.length;
+  const totalRounds=Math.min(3,m-1);
+  const rounds=[];
+  const count={};ids.forEach(id=>count[id]=0);
+  for(let r=0;r<totalRounds;r++){
+    const pairs=[];
+    for(let i=0;i<m/2;i++){
+      const a=arr[i],b=arr[m-1-i];
+      if(a&&b){pairs.push([a,b]);count[a]++;count[b]++;}
+    }
+    rounds.push(pairs);
+    const fixed=arr[0],rest=arr.slice(1);rest.unshift(rest.pop());arr=[fixed,...rest];
+  }
+  const extra=[];let guard=0;
+  while(ids.some(id=>count[id]<3)&&guard<50){
+    guard++;
+    const sorted=ids.slice().sort((a,b)=>count[a]-count[b]);
+    const a=sorted[0],b=sorted.find(x=>x!==a);
+    if(!b)break;
+    extra.push([a,b]);count[a]++;count[b]++;
+  }
+  if(extra.length)rounds.push(extra);
+  return rounds;
+}
+function computeStandingsIds(rrFixtures){
+  const wins={};
+  rrFixtures.forEach(f=>{wins[f.car1_id]=wins[f.car1_id]||0;wins[f.car2_id]=wins[f.car2_id]||0;});
+  rrFixtures.forEach(f=>{if(f.winner_id)wins[f.winner_id]=(wins[f.winner_id]||0)+1;});
+  return Object.keys(wins).sort((a,b)=>wins[b]-wins[a]);
+}
+const bracketSize=n=>n>=8?8:n>=4?4:n>=2?2:0;
+function seedBracket(qualifiers){
+  const half=qualifiers.length/2;
+  const top=qualifiers.slice(0,half),bottom=qualifiers.slice(half).reverse();
+  const pairs=[];
+  for(let i=0;i<half;i++)pairs.push([top[i],bottom[i]]);
+  return pairs;
+}
+const orderedWinners=matches=>matches.slice().sort((a,b)=>a.match_no-b.match_no).map(m=>m.winner_id);
+function bracketPairs(list){const pairs=[];for(let i=0;i<list.length;i+=2)pairs.push([list[i],list[i+1]]);return pairs;}
+async function maybeAdvanceTournament(){
+  let fixtures;
+  try{fixtures=await sbSelect("gc_fixtures");}catch(e){return;}
+  if(!fixtures.length)return;
+  const rr=fixtures.filter(f=>f.stage==="round_robin");
+  const qf=fixtures.filter(f=>f.stage==="quarterfinal");
+  const sf=fixtures.filter(f=>f.stage==="semifinal");
+  const fin=fixtures.filter(f=>f.stage==="final");
+  const rrDone=rr.length>0&&rr.every(f=>f.winner_id);
+  try{
+    if(rrDone&&!qf.length&&!sf.length&&!fin.length){
+      const standings=computeStandingsIds(rr);
+      const size=bracketSize(standings.length);
+      if(size<2)return;
+      const pairs=seedBracket(standings.slice(0,size));
+      const stage=size===8?"quarterfinal":size===4?"semifinal":"final";
+      await sbInsertMany("gc_fixtures",pairs.map((p,i)=>({stage,round_no:1,match_no:i+1,car1_id:p[0],car2_id:p[1],status:"pending"})));
+      return;
+    }
+    if(qf.length&&qf.every(f=>f.winner_id)&&!sf.length&&!fin.length){
+      const pairs=bracketPairs(orderedWinners(qf));
+      const stage=pairs.length===2?"semifinal":"final";
+      await sbInsertMany("gc_fixtures",pairs.map((p,i)=>({stage,round_no:1,match_no:i+1,car1_id:p[0],car2_id:p[1],status:"pending"})));
+      return;
+    }
+    if(sf.length&&sf.every(f=>f.winner_id)&&!fin.length){
+      const pairs=bracketPairs(orderedWinners(sf));
+      await sbInsertMany("gc_fixtures",pairs.map((p,i)=>({stage:"final",round_no:1,match_no:i+1,car1_id:p[0],car2_id:p[1],status:"pending"})));
+    }
+  }catch(e){}
+}
+function renderFixtureList(containerId,fixtures,opts){
+  const editable=opts&&opts.editable;
+  const wrap=document.getElementById(containerId);
+  if(!fixtures.length){wrap.innerHTML='<div class="empty">Fixtures haven\'t been created yet.</div>';return;}
+  const stageOrder=["round_robin","quarterfinal","semifinal","final"];
+  const stageLabel={round_robin:"Round Robin",quarterfinal:"Quarterfinals",semifinal:"Semifinals",final:"Final"};
+  let html="";
+  const finalRow=fixtures.find(f=>f.stage==="final"&&f.winner_id);
+  if(finalRow){
+    const champ=finalRow.winner_id===finalRow.car1_id?finalRow.car1:finalRow.car2;
+    html+=`<div class="champbanner">🏆 CHAMPION — ${esc(champ?.car_name||"—")}</div>`;
+  }
+  stageOrder.forEach(stage=>{
+    const rows=fixtures.filter(f=>f.stage===stage);
+    if(!rows.length)return;
+    if(stage==="round_robin"){
+      const roundNos=[...new Set(rows.map(r=>r.round_no))].sort((a,b)=>a-b);
+      roundNos.forEach(rn=>{
+        const rrows=rows.filter(r=>r.round_no===rn).sort((a,b)=>a.match_no-b.match_no);
+        html+=fxGroupHTML(`Round Robin — Round ${rn}`,rrows,editable);
+      });
+    }else{
+      const srows=rows.slice().sort((a,b)=>a.match_no-b.match_no);
+      html+=fxGroupHTML(stageLabel[stage],srows,editable);
+    }
+  });
+  wrap.innerHTML=html;
+}
+function fxGroupHTML(title,rows,editable){
+  return `<div class="fxgroup"><h4>${esc(title)}</h4><div class="fxlist">`+rows.map(r=>fxRowHTML(r,editable)).join("")+`</div></div>`;
+}
+function fxRowHTML(r,editable){
+  const c1=r.car1?esc(r.car1.car_name):"—",c2=r.car2?esc(r.car2.car_name):"—";
+  const done=!!r.winner_id;
+  const w1=done&&r.winner_id===r.car1_id,w2=done&&r.winner_id===r.car2_id;
+  const c1cls="fxcar"+(editable&&!done?" pick":"")+(w1?" winner":"")+(done&&!w1?" loser":"");
+  const c2cls="fxcar"+(editable&&!done?" pick":"")+(w2?" winner":"")+(done&&!w2?" loser":"");
+  const c1click=editable&&!done?` onclick="recordWinner('${r.id}','${r.car1_id}')"`:"";
+  const c2click=editable&&!done?` onclick="recordWinner('${r.id}','${r.car2_id}')"`:"";
+  return `<div class="fxrow"><span class="${c1cls}"${c1click}>${c1}</span><span class="fxvs">${done?"FINAL":"VS"}</span><span class="${c2cls}"${c2click}>${c2}</span></div>`;
+}
+async function recordWinner(fixtureId,winnerId){
+  try{
+    await sbUpdate("gc_fixtures",fixtureId,{winner_id:winnerId,status:"completed"});
+    await maybeAdvanceTournament();
+    await loadAdmin();
+  }catch(e){alert(e.message);}
+}
+async function createFixtures(){
+  const drivers=adminData.regs.filter(r=>r.role==="driver"&&r.status==="approved");
+  if(drivers.length<2){alert("Need at least 2 approved drivers to create fixtures.");return;}
+  const rounds=generateRoundRobin(drivers.map(d=>d.id));
+  const rows=[];
+  rounds.forEach((pairs,ri)=>pairs.forEach((p,mi)=>rows.push({stage:"round_robin",round_no:ri+1,match_no:mi+1,car1_id:p[0],car2_id:p[1],status:"pending"})));
+  try{await sbInsertMany("gc_fixtures",rows);await loadAdmin();}
+  catch(e){alert(e.message);}
+}
+async function resetFixtures(){
+  if(!confirm("Delete all fixtures and results? This can't be undone."))return;
+  try{await sbDeleteAll("gc_fixtures");await loadAdmin();}
+  catch(e){alert(e.message);}
+}
+
 /* ---------- dashboard ---------- */
 let dashData={logins:[],regs:[]},dashTab="drivers";
 async function loadDash(){
-  try{const [logins,regs,dragTimes]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","&status=eq.approved","*,gc_logins(avatar_url)"),sbSelect("gc_drag_times","&status=eq.approved","*,gc_logins(avatar_url)")]);dashData={logins,regs};
+  try{const [logins,regs,dragTimes,fixtures]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","&status=eq.approved","*,gc_logins(avatar_url)"),sbSelect("gc_drag_times","&status=eq.approved","*,gc_logins(avatar_url)"),sbSelect("gc_fixtures","",FIXTURE_SEL)]);dashData={logins,regs};
     document.getElementById("dLogins").textContent=logins.length;
     document.getElementById("dDrivers").textContent=regs.filter(r=>r.role==="driver").length;
     document.getElementById("dMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
     document.getElementById("dSafety").textContent=regs.filter(r=>r.role==="safety_car").length;
     renderDash();
     renderLeaderboard(dragTimes.slice().sort((a,b)=>a.time_seconds-b.time_seconds));
+    document.getElementById("fixturesWrap").style.display=fixtures.length?"block":"none";
+    if(fixtures.length)renderFixtureList("fixturesList",fixtures,{editable:false});
   }catch(e){document.getElementById("dashTable").innerHTML='<div class="empty">'+e.message+'</div>';}
 }
 function renderLeaderboard(rows){
@@ -702,10 +869,10 @@ function renderDash(){
 }
 
 /* ---------- admin ---------- */
-let adminData={logins:[],regs:[],dragTimes:[]},currentTab="drivers";
+let adminData={logins:[],regs:[],dragTimes:[],fixtures:[]},currentTab="drivers";
 async function loadAdmin(){
   const wrap=document.getElementById("adminTable");wrap.innerHTML='<div class="empty">Loading…</div>';
-  try{const [logins,regs,dragTimes]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","","*,gc_logins(avatar_url)"),sbSelect("gc_drag_times","","*,gc_logins(avatar_url)")]);adminData={logins,regs,dragTimes};
+  try{const [logins,regs,dragTimes,fixtures]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","","*,gc_logins(avatar_url)"),sbSelect("gc_drag_times","","*,gc_logins(avatar_url)"),sbSelect("gc_fixtures","",FIXTURE_SEL)]);adminData={logins,regs,dragTimes,fixtures};
     document.getElementById("stLogins").textContent=logins.length;
     document.getElementById("stDrivers").textContent=regs.filter(r=>r.role==="driver").length;
     document.getElementById("stMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
@@ -777,8 +944,22 @@ async function delLogin(id,btn){
   catch(e){btn.disabled=false;alert(e.message);}
 }
 const delBtn=id=>`<button class="delBtn" onclick="delReg('${id}',this)" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/><path d="M10 11v6M14 11v6"/></svg></button>`;
+function renderAdminFixtures(wrap){
+  if(!adminData.fixtures.length){
+    const driverCount=adminData.regs.filter(r=>r.role==="driver"&&r.status==="approved").length;
+    wrap.innerHTML=`<div class="empty" style="padding:30px 20px">
+      <p style="margin-bottom:14px;color:var(--dim)">No fixtures yet. ${driverCount} approved driver${driverCount===1?"":"s"} registered.</p>
+      <button class="btn-round" style="background:linear-gradient(100deg,var(--yellow),var(--green));color:#0A0A0A;border-color:transparent" onclick="createFixtures()" ${driverCount<2?"disabled":""}>Create Fixture</button>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn-round" onclick="resetFixtures()">Reset Fixtures</button></div><div id="adminFixturesList"></div>`;
+  renderFixtureList("adminFixturesList",adminData.fixtures,{editable:true});
+}
 function renderTab(){
   const wrap=document.getElementById("adminTable");
+  wrap.classList.toggle("tablewrap",currentTab!=="fixtures");
+  if(currentTab==="fixtures"){renderAdminFixtures(wrap);return;}
   if(currentTab==="logins"){
     const rows=adminData.logins;if(!rows.length){wrap.innerHTML='<div class="empty">No logins yet.</div>';return;}
     wrap.innerHTML=`<table><tr><th></th><th>Name</th><th>Admin</th><th>Logged in</th><th></th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${esc(r.avatar_url)}"></td><td>${esc(r.name)}</td><td>${r.is_admin?'<span class="status-badge approved">Admin</span>':''}</td><td>${fmt(r.created_at)}</td><td><button class="delBtn" onclick="delLogin('${r.id}',this)" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`).join("")+`</table>`;return;
