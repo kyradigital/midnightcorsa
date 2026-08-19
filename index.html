@@ -431,10 +431,10 @@ document.getElementById("gateForm").addEventListener("submit",async e=>{
     setUser("2");
     setNotif("2",[
       {title:"Registration approved",text:"You're cleared for the Corsa Event"},
-      {title:"Race fixtures",text:"RACE FIXTURES OUT AT 6:30PM"}
+      {title:"Race fixtures",text:"RACE FIXTURES OUT AT 8:15PM"}
     ]);
     show("dash");window.scrollTo(0,0);
-    showToast("Race Fixtures","RACE FIXTURES OUT AT 6:30PM");
+    showToast("Race Fixtures","RACE FIXTURES OUT AT 8:15PM");
     if(!approved.notified){try{await sbUpdate("gc_registrations",approved.id,{notified:true});}catch(e){}}
     loadDash();
   }else if(mine.length){
