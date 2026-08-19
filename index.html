@@ -100,6 +100,10 @@ svg{display:block}
 .rolecard p{font-size:12.5px;color:var(--dim);margin-top:2px}
 .rolecard .go{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-family:'Fredoka';font-weight:600;padding:10px 18px;border-radius:99px;font-size:13px;color:#0A0A0A;background:linear-gradient(100deg,var(--yellow),var(--green) 55%,var(--red));transition:filter .14s,transform .14s}
 .rolecard:hover .go{filter:brightness(1.08)}
+.rolecard.full{opacity:.5;filter:grayscale(.5);cursor:not-allowed}
+.rolecard.full:hover{transform:none;box-shadow:none}
+.rolecard.full .go{background:var(--card2);color:var(--dim)}
+.capnote{display:block;font-size:11.5px;color:var(--dim);margin-top:4px;font-weight:500}
 
 /* registered players panel */
 .playerpanel{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
@@ -107,7 +111,8 @@ svg{display:block}
 .ptabs button{background:var(--bg2);border:1px solid var(--line);color:var(--dim);padding:7px 14px;border-radius:99px;font-family:'Fredoka';font-weight:500;font-size:12px;transition:.14s}
 .ptabs button.active{background:linear-gradient(100deg,var(--yellow),var(--green));color:#0A0A0A;border-color:transparent}
 .plist{flex:1;overflow-y:auto;padding:12px 14px 14px;display:flex;flex-direction:column;gap:9px}
-.prow{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.prow{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.prow img.pav{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--card);border:1px solid var(--line)}
 .prow img.car{width:56px;height:38px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer;border:1px solid var(--line)}
 .prow .pinfo{flex:1;min-width:0}
 .prow .pinfo b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -177,8 +182,18 @@ svg{display:block}
 .stat:nth-child(3) .n{color:var(--red)}.stat:nth-child(4) .n{color:var(--yellow)}
 .stat .l{font-size:12px;font-weight:500;color:var(--dim);margin-top:-2px;position:relative}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.tabs button{background:var(--card);border:1px solid var(--line);color:var(--dim);padding:9px 18px;border-radius:99px;font-family:'Fredoka';font-weight:500;font-size:13px;transition:.14s}
+.tabs button{position:relative;background:var(--card);border:1px solid var(--line);color:var(--dim);padding:9px 18px;border-radius:99px;font-family:'Fredoka';font-weight:500;font-size:13px;transition:.14s}
 .tabs button.active{background:linear-gradient(100deg,var(--yellow),var(--green));color:#0A0A0A;border-color:transparent}
+.tabs button .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);margin-left:7px;vertical-align:middle;box-shadow:0 0 7px rgba(255,59,59,.9)}
+
+/* ---------- toasts ---------- */
+.toastwrap{position:fixed;top:18px;right:18px;z-index:90;display:flex;flex-direction:column;gap:10px;max-width:320px;width:calc(100% - 36px)}
+.toast{background:var(--card);border:1px solid rgba(255,224,27,.35);border-radius:16px;padding:13px 14px;box-shadow:0 20px 50px rgba(0,0,0,.6);display:flex;gap:10px;align-items:flex-start;animation:pop .22s cubic-bezier(.34,1.56,.64,1)}
+.toast .ic{color:var(--yellow);flex-shrink:0;margin-top:1px}
+.toast b{font-size:13px;display:block}
+.toast small{color:var(--dim);font-size:12px;display:block;margin-top:2px;line-height:1.4}
+.toast .xclose{margin-left:auto;background:transparent;color:var(--dim);width:20px;height:20px;display:grid;place-items:center;flex-shrink:0;font-size:16px;line-height:1}
+.toast .xclose:hover{color:#fff}
 .tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--rlg)}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
 th{text-align:left;padding:13px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);white-space:nowrap;font-weight:600}
@@ -248,14 +263,14 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
           <div class="rtext"><h3>DRIVER</h3><p>Bring your car to the strip.</p></div>
           <span class="go">Sign up →</span>
         </div>
-        <div class="rolecard" onclick="openForm('marshall')">
+        <div class="rolecard" id="card-marshall" onclick="openForm('marshall')">
           <div class="iconwrap"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4c3-1.5 5 1.5 8 0s5-1.5 5-1.5v9s-2 1.5-5 0-5 1.5-8 0"/></svg></div>
-          <div class="rtext"><h3>MARSHALL</h3><p>Run the event.</p></div>
+          <div class="rtext"><h3>MARSHALL</h3><p>Run the event.</p><span class="capnote" id="cap-marshall"></span></div>
           <span class="go">Sign up →</span>
         </div>
-        <div class="rolecard" onclick="openForm('safety_car')">
+        <div class="rolecard" id="card-safety_car" onclick="openForm('safety_car')">
           <div class="iconwrap"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 015 5v3l2 4v3H5v-3l2-4V7a5 5 0 015-5z"/><path d="M9 20a3 3 0 006 0"/></svg></div>
-          <div class="rtext"><h3>SAFETY CAR</h3><p>Keep it clean.</p></div>
+          <div class="rtext"><h3>SAFETY CAR</h3><p>Keep it clean.</p><span class="capnote" id="cap-safety_car"></span></div>
           <span class="go">Sign up →</span>
         </div>
       </div>
@@ -350,9 +365,9 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
       <div class="stat"><div class="n" id="stSafety">0</div><div class="l">Safety cars</div></div>
     </div>
     <div class="tabs">
-      <button class="active" onclick="showTab('drivers',this)">Drivers</button>
-      <button onclick="showTab('marshalls',this)">Marshalls</button>
-      <button onclick="showTab('safety',this)">Safety cars</button>
+      <button class="active" onclick="showTab('drivers',this)">Drivers<span class="dot" id="admdot-drivers" style="display:none"></span></button>
+      <button onclick="showTab('marshalls',this)">Marshalls<span class="dot" id="admdot-marshalls" style="display:none"></span></button>
+      <button onclick="showTab('safety',this)">Safety cars<span class="dot" id="admdot-safety" style="display:none"></span></button>
       <button onclick="showTab('logins',this)">Logins</button>
     </div>
     <div class="tablewrap" id="adminTable"></div>
@@ -360,6 +375,7 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
 </div>
 
 <div class="lightbox" id="lightbox" onclick="this.style.display='none'"><img id="lightboxImg" alt=""></div>
+<div class="toastwrap" id="toastwrap"></div>
 
 <script>
 const SB_URL="https://baxefjtopjuuuxrzvgbx.supabase.co";
@@ -367,7 +383,7 @@ const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const H={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
 
 async function sbInsert(t,row){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:{...H,"Prefer":"return=representation"},body:JSON.stringify(row)});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Save failed (${r.status})${d?": "+d:""}`);}return (await r.json())[0];}
-async function sbSelect(t,q=""){const r=await fetch(`${SB_URL}/rest/v1/${t}?select=*${q}&order=created_at.desc`,{headers:H});if(!r.ok)throw new Error("Load failed ("+r.status+")");return r.json();}
+async function sbSelect(t,q="",sel="*"){const r=await fetch(`${SB_URL}/rest/v1/${t}?select=${encodeURIComponent(sel)}${q}&order=created_at.desc`,{headers:H});if(!r.ok)throw new Error("Load failed ("+r.status+")");return r.json();}
 async function sbUpdate(t,id,patch){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"PATCH",headers:{...H,"Prefer":"return=representation"},body:JSON.stringify(patch)});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Update failed (${r.status})${d?": "+d:""}`);}return (await r.json())[0];}
 async function sbDelete(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"DELETE",headers:H});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Delete failed (${r.status})${d?": "+d:""}`);}}
 
@@ -399,9 +415,10 @@ document.getElementById("gateForm").addEventListener("submit",async e=>{
   btn.disabled=true;btn.textContent="Starting…";err.textContent="";
   const isAdmin=name.toLowerCase()==="lunatic";
   const avatar=await assignAvatar(name);
-  try{await sbInsert("gc_logins",{name,avatar_url:avatar,is_admin:isAdmin});}
+  let loginRow;
+  try{loginRow=await sbInsert("gc_logins",{name,avatar_url:avatar,is_admin:isAdmin});}
   catch(e2){err.textContent=e2.message+" — check your internet.";btn.disabled=false;btn.textContent="Continue";return;}
-  currentUser={name,avatar};
+  currentUser={name,avatar,id:loginRow.id};
   document.getElementById("gate").style.display="none";
 
   if(isAdmin){show("admin");loadAdmin();window.scrollTo(0,0);return;}
@@ -412,27 +429,31 @@ document.getElementById("gateForm").addEventListener("submit",async e=>{
 
   if(approved){
     setUser("2");
-    setNotif("2",true,"Registration approved","You're cleared for the Corsa Event");
+    setNotif("2",[
+      {title:"Registration approved",text:"You're cleared for the Corsa Event"},
+      {title:"Race fixtures",text:"RACE FIXTURES OUT AT 6:30PM"}
+    ]);
     show("dash");window.scrollTo(0,0);
+    showToast("Race Fixtures","RACE FIXTURES OUT AT 6:30PM");
     if(!approved.notified){try{await sbUpdate("gc_registrations",approved.id,{notified:true});}catch(e){}}
     loadDash();
   }else if(mine.length){
     showStatus();
   }else{
     setUser("");
-    setNotif("",false);
+    setNotif("",[]);
     show("site");loadPlayers();window.scrollTo(0,0);
   }
 });
 function setUser(sfx){document.getElementById("whoName"+sfx).textContent=currentUser.name;document.getElementById("whoAv"+sfx).src=currentUser.avatar;}
 
 /* ---------- notifications ---------- */
-function setNotif(sfx,hasApproval,title,text){
+function setNotif(sfx,items){
   const badge=document.getElementById("bellBadge"+sfx);
   const body=document.getElementById("notifBody"+sfx);
-  if(hasApproval){
-    badge.classList.add("on");
-    body.innerHTML=`<div class="nitem"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span><b>${title}</b><small>${text}</small></span></div>`;
+  if(items&&items.length){
+    badge.classList.add("on");badge.textContent=items.length;
+    body.innerHTML=items.map(it=>`<div class="nitem"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span><b>${esc(it.title)}</b><small>${esc(it.text)}</small></span></div>`).join("");
   }else{
     badge.classList.remove("on");
     body.innerHTML=`<div class="nempty">You're all caught up</div>`;
@@ -444,11 +465,24 @@ document.addEventListener("click",e=>{
   if(!e.target.closest(".navright")) document.querySelectorAll(".notif").forEach(n=>n.classList.remove("open"));
 });
 
+/* ---------- toasts ---------- */
+function showToast(title,text){
+  const wrap=document.getElementById("toastwrap");
+  const el=document.createElement("div");
+  el.className="toast";
+  el.innerHTML=`<span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.2L12 16.4 5.7 20.8 8 13.6 2 9.2h7.6z"/></svg></span><span><b>${esc(title)}</b><small>${esc(text)}</small></span><button class="xclose" aria-label="Dismiss">×</button>`;
+  el.querySelector(".xclose").onclick=()=>el.remove();
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(),8000);
+}
+
 /* ---------- registered players (right panel) ---------- */
 let playersData=[], playersTab="drivers";
+const avatarOf=r=>(r.gc_logins&&r.gc_logins.avatar_url)||fallbackAvatar(r.roblox_username||r.real_name||"racer");
 async function loadPlayers(){
-  try{ playersData=await sbSelect("gc_registrations","&status=eq.approved"); renderPlayers(); }
+  try{ playersData=await sbSelect("gc_registrations","&status=eq.approved","*,gc_logins(avatar_url)"); renderPlayers(); }
   catch(e){ document.getElementById("playerList").innerHTML='<div class="pempty">Could not load.</div>'; }
+  loadCapacity();
 }
 function showPlayers(tab,btn){playersTab=tab;btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderPlayers();}
 function renderPlayers(){
@@ -458,15 +492,35 @@ function renderPlayers(){
   if(!rows.length){ list.innerHTML='<div class="pempty">No approved '+playersTab+' yet.<br>Be the first to sign up!</div>'; return; }
   if(roleKey==="driver"){
     list.innerHTML=rows.map(r=>`<div class="prow">
+      <img class="pav" src="${avatarOf(r)}" alt="">
       ${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:''}
       <div class="pinfo"><b>${esc(r.car_name)}</b><small>${esc(r.roblox_username)} · ${esc(r.instagram_username)}</small></div>
       <span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span>
     </div>`).join("");
   }else{
     list.innerHTML=rows.map(r=>`<div class="prow">
+      <img class="pav" src="${avatarOf(r)}" alt="">
       <div class="pinfo"><b>${esc(r.roblox_username)}</b><small>${esc(r.instagram_username)}</small></div>
     </div>`).join("");
   }
+}
+
+/* ---------- role capacity (marshall/safety) ---------- */
+const ROLE_CAP={marshall:3,safety_car:2};
+let capCounts={};
+async function loadCapacity(){
+  try{
+    const rows=await sbSelect("gc_registrations","&status=neq.rejected","role");
+    capCounts={};rows.forEach(r=>capCounts[r.role]=(capCounts[r.role]||0)+1);
+  }catch(e){capCounts={};}
+  Object.keys(ROLE_CAP).forEach(updateCapUI);
+}
+function updateCapUI(role){
+  const cap=ROLE_CAP[role],count=capCounts[role]||0;
+  const card=document.getElementById("card-"+role),note=document.getElementById("cap-"+role);
+  if(!card)return;
+  if(count>=cap){card.classList.add("full");note.textContent=`FULL · ${count}/${cap} slots taken`;}
+  else{card.classList.remove("full");note.textContent=`${count}/${cap} slots taken`;}
 }
 
 /* ---------- forms ---------- */
@@ -479,6 +533,10 @@ const FORMS={driver:{title:"Driver entry",sub:"Bring your car to the strip.",car
 let carPhotoData=null;
 
 function openForm(role){
+  if(ROLE_CAP[role]&&(capCounts[role]||0)>=ROLE_CAP[role]){
+    showToast("Slots full",`${role==="marshall"?"Marshall":"Safety car"} registrations are full (${ROLE_CAP[role]}/${ROLE_CAP[role]}).`);
+    return;
+  }
   const f=FORMS[role];carPhotoData=null;
   const classBlock=f.car?`
     <div class="field"><label>Car</label><input name="car" required placeholder="e.g. Skyline GT-R"></div>
@@ -528,7 +586,7 @@ async function submitReg(e,role){
   e.preventDefault();
   const form=e.target,msg=document.getElementById("regMsg"),btn=form.querySelector(".btn-main");
   msg.textContent="";
-  const row={role,real_name:currentUser?.name||null,roblox_username:form.roblox.value.trim(),instagram_username:form.instagram.value.trim(),status:"pending"};
+  const row={role,login_id:currentUser?.id||null,real_name:currentUser?.name||null,roblox_username:form.roblox.value.trim(),instagram_username:form.instagram.value.trim(),status:"pending"};
   if(role==="driver"){row.car_name=form.car.value.trim();row.car_class=form.querySelector('input[name="class"]:checked')?.value||null;if(!row.car_class){msg.textContent="Pick a class.";return;}if(!carPhotoData){msg.textContent="Add a car photo.";return;}row.car_photo=carPhotoData;}
   btn.disabled=true;btn.textContent="Sending…";
   try{await sbInsert("gc_registrations",row);closeForm();showStatus();}
@@ -546,7 +604,7 @@ function showStatus(){
 /* ---------- dashboard ---------- */
 let dashData={logins:[],regs:[]},dashTab="drivers";
 async function loadDash(){
-  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","&status=eq.approved")]);dashData={logins,regs};
+  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","&status=eq.approved","*,gc_logins(avatar_url)")]);dashData={logins,regs};
     document.getElementById("dLogins").textContent=logins.length;
     document.getElementById("dDrivers").textContent=regs.filter(r=>r.role==="driver").length;
     document.getElementById("dMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
@@ -561,9 +619,9 @@ function renderDash(){
   const rows=dashData.regs.filter(r=>r.role===roleKey);
   if(!rows.length){wrap.innerHTML='<div class="empty">No approved '+dashTab+' yet.</div>';return;}
   if(roleKey==="driver"){
-    wrap.innerHTML=`<table><tr><th>Car</th><th>Driver</th><th>Class</th><th>Roblox</th><th>Instagram</th></tr>`+rows.map(r=>`<tr><td>${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:"—"}</td><td>${esc(r.car_name)}</td><td><span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td></tr>`).join("")+`</table>`;
+    wrap.innerHTML=`<table><tr><th></th><th>Car</th><th>Driver</th><th>Class</th><th>Roblox</th><th>Instagram</th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${avatarOf(r)}"></td><td>${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:"—"}</td><td>${esc(r.car_name)}</td><td><span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td></tr>`).join("")+`</table>`;
   }else{
-    wrap.innerHTML=`<table><tr><th>Roblox</th><th>Instagram</th><th>Name</th></tr>`+rows.map(r=>`<tr><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td></tr>`).join("")+`</table>`;
+    wrap.innerHTML=`<table><tr><th></th><th>Roblox</th><th>Instagram</th><th>Name</th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${avatarOf(r)}"></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td></tr>`).join("")+`</table>`;
   }
 }
 
@@ -571,15 +629,36 @@ function renderDash(){
 let adminData={logins:[],regs:[]},currentTab="drivers";
 async function loadAdmin(){
   const wrap=document.getElementById("adminTable");wrap.innerHTML='<div class="empty">Loading…</div>';
-  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations")]);adminData={logins,regs};
+  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","","*,gc_logins(avatar_url)")]);adminData={logins,regs};
     document.getElementById("stLogins").textContent=logins.length;
     document.getElementById("stDrivers").textContent=regs.filter(r=>r.role==="driver").length;
     document.getElementById("stMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
     document.getElementById("stSafety").textContent=regs.filter(r=>r.role==="safety_car").length;
+    updateAdminDots();
     renderTab();
   }catch(e){wrap.innerHTML='<div class="empty">'+e.message+'</div>';}
 }
-function showTab(tab,btn){currentTab=tab;btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderTab();}
+const TAB_ROLE={drivers:"driver",marshalls:"marshall",safety:"safety_car"};
+function getSeen(){try{return JSON.parse(localStorage.getItem("gc_admin_seen")||"[]");}catch(e){return[];}}
+function markSeen(ids){if(!ids.length)return;const s=new Set(getSeen());ids.forEach(id=>s.add(id));localStorage.setItem("gc_admin_seen",JSON.stringify([...s]));}
+function updateAdminDots(){
+  const seen=getSeen();
+  Object.keys(TAB_ROLE).forEach(tab=>{
+    const role=TAB_ROLE[tab];
+    const hasNew=adminData.regs.some(r=>r.role===role&&r.status==="pending"&&!seen.includes(r.id));
+    const dot=document.getElementById("admdot-"+tab);
+    if(dot)dot.style.display=hasNew?"inline-block":"none";
+  });
+}
+function showTab(tab,btn){
+  currentTab=tab;
+  btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
+  if(TAB_ROLE[tab]){
+    markSeen(adminData.regs.filter(r=>r.role===TAB_ROLE[tab]&&r.status==="pending").map(r=>r.id));
+    const dot=document.getElementById("admdot-"+tab);if(dot)dot.style.display="none";
+  }
+  renderTab();
+}
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=t=>new Date(t).toLocaleString();
 async function approve(id,btn){
@@ -616,9 +695,9 @@ function renderTab(){
   if(!rows.length){wrap.innerHTML='<div class="empty">Nothing here yet.</div>';return;}
   const action=r=>r.status==="approved"?`<span class="status-badge approved">Approved</span>`:`<button class="approveBtn" onclick="approve('${r.id}',this)">Approve</button>`;
   if(roleKey==="driver"){
-    wrap.innerHTML=`<table><tr><th>Car</th><th>Name</th><th>Class</th><th>Roblox</th><th>Instagram</th><th>Real name</th><th>Status</th></tr>`+rows.map(r=>`<tr><td>${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:"—"}</td><td>${esc(r.car_name)}</td><td><span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td><td>${action(r)}</td></tr>`).join("")+`</table>`;
+    wrap.innerHTML=`<table><tr><th></th><th>Car</th><th>Name</th><th>Class</th><th>Roblox</th><th>Instagram</th><th>Real name</th><th>Status</th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${avatarOf(r)}"></td><td>${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:"—"}</td><td>${esc(r.car_name)}</td><td><span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td><td>${action(r)}</td></tr>`).join("")+`</table>`;
   }else{
-    wrap.innerHTML=`<table><tr><th>Roblox</th><th>Instagram</th><th>Real name</th><th>When</th><th>Status</th></tr>`+rows.map(r=>`<tr><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td><td>${fmt(r.created_at)}</td><td>${action(r)}</td></tr>`).join("")+`</table>`;
+    wrap.innerHTML=`<table><tr><th></th><th>Roblox</th><th>Instagram</th><th>Real name</th><th>When</th><th>Status</th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${avatarOf(r)}"></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td><td>${fmt(r.created_at)}</td><td>${action(r)}</td></tr>`).join("")+`</table>`;
   }
 }
 function zoom(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightbox").style.display="flex";}
