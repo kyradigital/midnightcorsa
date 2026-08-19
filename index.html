@@ -327,6 +327,14 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
       <h2>THE <span class="grad">GRID</span></h2>
       <p>Everyone signed up for the Corsa Event</p>
     </div>
+    <div id="dragboardWrap" style="display:none;margin-bottom:26px">
+      <div class="colhead" style="margin-bottom:12px">
+        <span class="pill" style="background:rgba(255,224,27,.1);color:var(--yellow);border-color:rgba(255,224,27,.3)">🏁 Dragy</span>
+        <h2>LEADERBOARD</h2>
+        <p class="sub">Fastest approved 1/2 mile times.</p>
+      </div>
+      <div class="tablewrap" id="dragboardTable"></div>
+    </div>
     <div class="stats">
       <div class="stat"><div class="n" id="dLogins">0</div><div class="l">Racers in</div></div>
       <div class="stat"><div class="n" id="dDrivers">0</div><div class="l">Drivers</div></div>
@@ -350,6 +358,28 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
   </div>
 </div>
 
+<!-- DRAG TIME (blocking, no close) -->
+<div class="overlay" id="dragOverlay">
+  <div class="modal" id="dragModal">
+    <div class="iconwrap"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+    <h3>YOUR CAR'S FASTEST 1/2 MILE TIME</h3>
+    <p class="sub">Head to the Greenville airport drag strip, and time your registered car in an individual race. Write your best time below, and upload photo proof of your time.</p>
+    <p style="color:var(--red);font-weight:600;font-size:12px;margin:-10px 0 16px;line-height:1.5">NOTE — YOU WILL NOT BE ABLE TO PROCEED WITHOUT YOUR VEHICLE'S TIME.</p>
+    <form id="dragForm">
+      <div class="field"><label>Your 1/2 mile time (seconds)</label><input name="time" required inputmode="decimal" placeholder="e.g. 10.523"></div>
+      <div class="field"><label>Photo proof</label>
+        <div class="drop" id="dragDropZone">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          <span id="dragDropText">Tap to upload photo proof</span><img id="dragPreview" alt="">
+        </div>
+        <input type="file" id="dragPhoto" accept="image/*" hidden>
+      </div>
+      <button type="submit" class="btn-main btn-grad">Submit time</button>
+      <div class="msg" id="dragMsg"></div>
+    </form>
+  </div>
+</div>
+
 <!-- ADMIN -->
 <div id="admin" class="screen">
   <nav class="nav">
@@ -368,6 +398,7 @@ td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:poin
       <button class="active" onclick="showTab('drivers',this)">Drivers<span class="dot" id="admdot-drivers" style="display:none"></span></button>
       <button onclick="showTab('marshalls',this)">Marshalls<span class="dot" id="admdot-marshalls" style="display:none"></span></button>
       <button onclick="showTab('safety',this)">Safety cars<span class="dot" id="admdot-safety" style="display:none"></span></button>
+      <button onclick="showTab('drag',this)">Drag Times<span class="dot" id="admdot-drag" style="display:none"></span></button>
       <button onclick="showTab('logins',this)">Logins</button>
     </div>
     <div class="tablewrap" id="adminTable"></div>
@@ -437,6 +468,7 @@ document.getElementById("gateForm").addEventListener("submit",async e=>{
     showToast("Race Fixtures","RACE FIXTURES OUT AT 8:15PM");
     if(!approved.notified){try{await sbUpdate("gc_registrations",approved.id,{notified:true});}catch(e){}}
     loadDash();
+    if(approved.role==="driver")maybeShowDragPrompt(approved);
   }else if(mine.length){
     showStatus();
   }else{
@@ -593,6 +625,42 @@ async function submitReg(e,role){
   catch(err){btn.disabled=false;btn.textContent="Submit";msg.textContent=err.message;}
 }
 
+/* ---------- drag time (blocking prompt) ---------- */
+let dragPhotoData=null;
+async function maybeShowDragPrompt(reg){
+  try{
+    const existing=await sbSelect("gc_drag_times",`&registration_id=eq.${reg.id}`);
+    if(existing.length)return;
+  }catch(e){return;}
+  openDragModal(reg);
+}
+function openDragModal(reg){
+  dragPhotoData=null;
+  const dz=document.getElementById("dragDropZone"),fi=document.getElementById("dragPhoto");
+  dz.onclick=()=>fi.click();
+  fi.onchange=()=>{
+    const file=fi.files[0];if(!file)return;
+    const img=new Image();
+    img.onload=()=>{const max=900;let w=img.width,h=img.height;if(w>max){h=h*max/w;w=max;}const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);dragPhotoData=c.toDataURL("image/jpeg",.8);const p=document.getElementById("dragPreview");p.src=dragPhotoData;p.style.display="inline-block";document.getElementById("dragDropText").textContent="Tap to change";};
+    img.src=URL.createObjectURL(file);
+  };
+  document.getElementById("dragForm").onsubmit=async e=>{
+    e.preventDefault();
+    const form=e.target,msg=document.getElementById("dragMsg"),btn=form.querySelector(".btn-main");
+    msg.textContent="";
+    const raw=form.time.value.trim();
+    const t=parseFloat(raw);
+    if(!raw||isNaN(t)||t<=0){msg.textContent="Enter a valid time in seconds.";return;}
+    if(!dragPhotoData){msg.textContent="Upload photo proof of your time.";return;}
+    btn.disabled=true;btn.textContent="Submitting…";
+    try{
+      await sbInsert("gc_drag_times",{registration_id:reg.id,login_id:currentUser?.id||null,real_name:currentUser?.name||null,car_name:reg.car_name||null,time_seconds:t,time_display:raw,photo_proof:dragPhotoData,status:"pending"});
+      document.getElementById("dragOverlay").classList.remove("open");
+    }catch(err){btn.disabled=false;btn.textContent="Submit time";msg.textContent=err.message;}
+  };
+  document.getElementById("dragOverlay").classList.add("open");
+}
+
 /* ---------- status ---------- */
 function showStatus(){
   document.getElementById("gate").style.display="none";hideAll();
@@ -604,13 +672,21 @@ function showStatus(){
 /* ---------- dashboard ---------- */
 let dashData={logins:[],regs:[]},dashTab="drivers";
 async function loadDash(){
-  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","&status=eq.approved","*,gc_logins(avatar_url)")]);dashData={logins,regs};
+  try{const [logins,regs,dragTimes]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","&status=eq.approved","*,gc_logins(avatar_url)"),sbSelect("gc_drag_times","&status=eq.approved","*,gc_logins(avatar_url)")]);dashData={logins,regs};
     document.getElementById("dLogins").textContent=logins.length;
     document.getElementById("dDrivers").textContent=regs.filter(r=>r.role==="driver").length;
     document.getElementById("dMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
     document.getElementById("dSafety").textContent=regs.filter(r=>r.role==="safety_car").length;
     renderDash();
+    renderLeaderboard(dragTimes.slice().sort((a,b)=>a.time_seconds-b.time_seconds));
   }catch(e){document.getElementById("dashTable").innerHTML='<div class="empty">'+e.message+'</div>';}
+}
+function renderLeaderboard(rows){
+  const wrap=document.getElementById("dragboardTable"),section=document.getElementById("dragboardWrap");
+  if(!rows.length){section.style.display="none";return;}
+  section.style.display="block";
+  const medal=i=>i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1)+".";
+  wrap.innerHTML=`<table><tr><th>#</th><th></th><th>Driver</th><th>Car</th><th>Time</th></tr>`+rows.map((r,i)=>`<tr><td>${medal(i)}</td><td><img class="av" src="${avatarOf(r)}"></td><td>${esc(r.real_name)}</td><td>${esc(r.car_name)}</td><td><b>${esc(r.time_display)}s</b></td></tr>`).join("")+`</table>`;
 }
 function showDashTab(tab,btn){dashTab=tab;btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderDash();}
 function renderDash(){
@@ -626,10 +702,10 @@ function renderDash(){
 }
 
 /* ---------- admin ---------- */
-let adminData={logins:[],regs:[]},currentTab="drivers";
+let adminData={logins:[],regs:[],dragTimes:[]},currentTab="drivers";
 async function loadAdmin(){
   const wrap=document.getElementById("adminTable");wrap.innerHTML='<div class="empty">Loading…</div>';
-  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","","*,gc_logins(avatar_url)")]);adminData={logins,regs};
+  try{const [logins,regs,dragTimes]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","","*,gc_logins(avatar_url)"),sbSelect("gc_drag_times","","*,gc_logins(avatar_url)")]);adminData={logins,regs,dragTimes};
     document.getElementById("stLogins").textContent=logins.length;
     document.getElementById("stDrivers").textContent=regs.filter(r=>r.role==="driver").length;
     document.getElementById("stMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
@@ -649,6 +725,9 @@ function updateAdminDots(){
     const dot=document.getElementById("admdot-"+tab);
     if(dot)dot.style.display=hasNew?"inline-block":"none";
   });
+  const hasNewDrag=adminData.dragTimes.some(r=>r.status==="pending"&&!seen.includes(r.id));
+  const dragDot=document.getElementById("admdot-drag");
+  if(dragDot)dragDot.style.display=hasNewDrag?"inline-block":"none";
 }
 function showTab(tab,btn){
   currentTab=tab;
@@ -656,8 +735,22 @@ function showTab(tab,btn){
   if(TAB_ROLE[tab]){
     markSeen(adminData.regs.filter(r=>r.role===TAB_ROLE[tab]&&r.status==="pending").map(r=>r.id));
     const dot=document.getElementById("admdot-"+tab);if(dot)dot.style.display="none";
+  }else if(tab==="drag"){
+    markSeen(adminData.dragTimes.filter(r=>r.status==="pending").map(r=>r.id));
+    const dot=document.getElementById("admdot-drag");if(dot)dot.style.display="none";
   }
   renderTab();
+}
+async function approveDrag(id,btn){
+  btn.disabled=true;btn.textContent="Approving…";
+  try{await sbUpdate("gc_drag_times",id,{status:"approved",approved_at:new Date().toISOString()});const r=adminData.dragTimes.find(x=>x.id===id);if(r)r.status="approved";renderTab();}
+  catch(e){btn.disabled=false;btn.textContent="Approve";alert(e.message);}
+}
+async function delDrag(id,btn){
+  if(!confirm("Delete this time entry? The driver will be able to resubmit."))return;
+  btn.disabled=true;
+  try{await sbDelete("gc_drag_times",id);adminData.dragTimes=adminData.dragTimes.filter(r=>r.id!==id);renderTab();}
+  catch(e){btn.disabled=false;alert(e.message);}
 }
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=t=>new Date(t).toLocaleString();
@@ -689,6 +782,13 @@ function renderTab(){
   if(currentTab==="logins"){
     const rows=adminData.logins;if(!rows.length){wrap.innerHTML='<div class="empty">No logins yet.</div>';return;}
     wrap.innerHTML=`<table><tr><th></th><th>Name</th><th>Admin</th><th>Logged in</th><th></th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${esc(r.avatar_url)}"></td><td>${esc(r.name)}</td><td>${r.is_admin?'<span class="status-badge approved">Admin</span>':''}</td><td>${fmt(r.created_at)}</td><td><button class="delBtn" onclick="delLogin('${r.id}',this)" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`).join("")+`</table>`;return;
+  }
+  if(currentTab==="drag"){
+    const rows=adminData.dragTimes.slice().sort((a,b)=>a.time_seconds-b.time_seconds);
+    if(!rows.length){wrap.innerHTML='<div class="empty">No times submitted yet.</div>';return;}
+    const dragAction=r=>r.status==="approved"?`<span class="status-badge approved">Approved</span>`:`<button class="approveBtn" onclick="approveDrag('${r.id}',this)">Approve</button>`;
+    wrap.innerHTML=`<table><tr><th></th><th>Driver</th><th>Car</th><th>Time</th><th>Proof</th><th>Status</th><th></th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${avatarOf(r)}"></td><td>${esc(r.real_name)}</td><td>${esc(r.car_name)}</td><td><b>${esc(r.time_display)}s</b></td><td>${r.photo_proof?`<img class="car" src="${r.photo_proof}" onclick="zoom(this.src)">`:"—"}</td><td>${dragAction(r)}</td><td><button class="delBtn" onclick="delDrag('${r.id}',this)" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`).join("")+`</table>`;
+    return;
   }
   const roleKey={drivers:"driver",marshalls:"marshall",safety:"safety_car"}[currentTab];
   const rows=adminData.regs.filter(r=>r.role===roleKey);
