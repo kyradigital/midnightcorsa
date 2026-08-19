@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MYORTIEE.COM · CORSA EVENT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Archivo:ital,wght@0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000;
+  --bg2:#0B0B0B;
+  --card:#111;
+  --card2:#181818;
+  --line:#262626;
+  --txt:#F5F5F5;
+  --dim:#9A9A9A;
+  --yellow:#FFE01B;
+  --green:#3BF07A;
+  --red:#FF3B3B;
+  --r:20px;
+  --rlg:28px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer;border:none}
+input{font-family:inherit}
+.fred{font-family:'Fredoka',sans-serif}
+.archivo{font-family:'Archivo',sans-serif;font-weight:800;letter-spacing:-.02em}
+h1,h2,h3{font-family:'Fredoka',sans-serif;font-weight:700;letter-spacing:-.01em}
+svg{display:block}
+
+/* ---------- GATE ---------- */
+#gate{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+/* traffic light */
+.traffic{width:44px;background:#0d0d0d;border:1px solid var(--line);border-radius:12px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:22px;box-shadow:0 8px 22px rgba(0,0,0,.6)}
+.tlight{width:22px;height:22px;border-radius:50%;background:#1a1a1a;border:1px solid #222;transition:.15s}
+.tlight.red.on{background:var(--red);box-shadow:0 0 22px rgba(255,59,59,.85)}
+.tlight.yellow.on{background:var(--yellow);box-shadow:0 0 22px rgba(255,224,27,.85)}
+.tlight.green.on{background:var(--green);box-shadow:0 0 24px rgba(59,240,122,.9)}
+#gate h1{font-size:clamp(40px,10vw,84px);line-height:.95;margin-bottom:6px}
+#gate h1 .grad{background:linear-gradient(100deg,var(--yellow),var(--green) 55%,var(--red));-webkit-background-clip:text;background-clip:text;color:transparent}
+#gate .tag{font-size:16px;color:var(--dim);letter-spacing:.24em;margin-bottom:32px;text-transform:uppercase}
+.gatecard{width:min(360px,100%);background:rgba(17,17,17,.75);border:1px solid var(--line);border-radius:var(--rlg);padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.gatecard label{display:block;text-align:left;font-size:13px;color:var(--dim);margin-bottom:9px;font-weight:500}
+.gatecard label b{color:var(--txt)}
+.gatecard input{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:14px 16px;font-size:15px;border-radius:16px;outline:none;transition:.15s}
+.gatecard input:focus{border-color:var(--yellow);box-shadow:0 0 0 4px rgba(255,224,27,.14)}
+.btn-grad{background:linear-gradient(100deg,var(--yellow),var(--green) 55%,var(--red));color:#0A0A0A;font-family:'Fredoka';font-weight:600}
+.btn-main{width:100%;margin-top:14px;padding:15px;border-radius:16px;font-size:16px;transition:transform .12s,filter .12s;box-shadow:0 10px 26px rgba(59,240,122,.18)}
+.btn-main:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn-main:active{transform:translateY(0)}
+.btn-main:disabled{opacity:.6;cursor:wait;transform:none}
+#gateErr{color:var(--red);font-size:12px;margin-top:11px;min-height:15px;word-break:break-word}
+
+/* ---------- screens ---------- */
+.screen{display:none;position:relative;z-index:2}
+.screen.show{display:block}
+#site.show{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+.nav{max-width:1180px;width:100%;margin:0 auto;padding:16px 22px;display:flex;align-items:center;gap:12px}
+.nav .logo{font-family:'Fredoka';font-weight:700;font-size:20px}
+.nav .logo span{color:var(--yellow)}
+.navright{margin-left:auto;display:flex;align-items:center;gap:10px;position:relative}
+.bell{position:relative;width:38px;height:38px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;color:var(--dim);transition:.14s}
+.bell:hover{color:var(--txt)}
+.bell .badge{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center}
+.bell .badge.on{display:flex}
+/* notification dropdown panel */
+.notif{position:absolute;top:46px;right:0;width:280px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.6);padding:14px;display:none;z-index:30}
+.notif.open{display:block;animation:pop .18s ease}
+.notif .nhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.notif .nhead b{font-size:14px}
+.notif .nclose{width:26px;height:26px;border-radius:50%;background:var(--bg2);color:var(--dim);display:grid;place-items:center;transition:.14s}
+.notif .nclose:hover{background:var(--red);color:#fff}
+.notif .nitem{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border:1px solid rgba(59,240,122,.25);border-radius:12px;padding:11px}
+.notif .nitem .ic{color:var(--green);flex-shrink:0}
+.notif .nitem b{font-size:13px;display:block}
+.notif .nitem small{color:var(--dim);font-size:12px}
+.notif .nempty{color:var(--dim);font-size:12.5px;text-align:center;padding:14px 0}
+.who{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--dim);background:var(--card);border:1px solid var(--line);padding:6px 12px 6px 6px;border-radius:99px}
+.who img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--bg2)}
+.who b{color:var(--txt);font-weight:600}
+
+/* ---------- register: split layout ---------- */
+.split{max-width:1180px;width:100%;margin:0 auto;padding:8px 22px 22px;flex:1;display:grid;grid-template-columns:1fr 1fr;gap:22px;min-height:0}
+.col{display:flex;flex-direction:column;min-height:0}
+.colhead{margin-bottom:14px}
+.colhead .pill{display:inline-block;background:rgba(59,240,122,.1);color:var(--green);border:1px solid rgba(59,240,122,.3);padding:5px 12px;border-radius:99px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.colhead h2{font-family:'Archivo',sans-serif;font-weight:900;letter-spacing:-.02em;font-size:clamp(30px,4vw,46px);line-height:.95}
+.colhead .sub{color:var(--dim);font-size:12.5px;margin-top:4px}
+
+.rolelist{display:flex;flex-direction:column;gap:14px;justify-content:center;flex:1}
+.rolecard{display:flex;align-items:center;gap:16px;border-radius:var(--rlg);padding:20px 22px;cursor:pointer;background:var(--card);border:1px solid var(--line);transition:transform .16s,background .16s,box-shadow .16s}
+.rolecard:hover{transform:translateY(-3px);background:var(--card2);box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.rolecard .iconwrap{color:var(--yellow);flex-shrink:0}
+.rolecard .rtext{flex:1;min-width:0}
+.rolecard h3{font-family:'Archivo',sans-serif;font-weight:800;letter-spacing:-.01em;font-size:22px}
+.rolecard p{font-size:12.5px;color:var(--dim);margin-top:2px}
+.rolecard .go{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-family:'Fredoka';font-weight:600;padding:10px 18px;border-radius:99px;font-size:13px;color:#0A0A0A;background:linear-gradient(100deg,var(--yellow),var(--green) 55%,var(--red));transition:filter .14s,transform .14s}
+.rolecard:hover .go{filter:brightness(1.08)}
+
+/* registered players panel */
+.playerpanel{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.ptabs{display:flex;gap:6px;padding:14px 14px 0;flex-wrap:wrap}
+.ptabs button{background:var(--bg2);border:1px solid var(--line);color:var(--dim);padding:7px 14px;border-radius:99px;font-family:'Fredoka';font-weight:500;font-size:12px;transition:.14s}
+.ptabs button.active{background:linear-gradient(100deg,var(--yellow),var(--green));color:#0A0A0A;border-color:transparent}
+.plist{flex:1;overflow-y:auto;padding:12px 14px 14px;display:flex;flex-direction:column;gap:9px}
+.prow{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.prow img.car{width:56px;height:38px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer;border:1px solid var(--line)}
+.prow .pinfo{flex:1;min-width:0}
+.prow .pinfo b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .pinfo small{color:var(--dim);font-size:12px}
+.prow .tbadge{flex-shrink:0}
+.pempty{color:var(--dim);font-size:13px;text-align:center;padding:30px 0;margin:auto}
+.tbadge{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap;color:#0A0A0A}
+.tbadge.Hypercar{background:var(--yellow)}.tbadge.EV{background:var(--green)}
+.tbadge.Classic{background:#FF8A5B}.tbadge.SportsCar{background:#5BC8FF}
+
+/* ---------- MODAL ---------- */
+.overlay{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:18px;animation:fade .18s ease}
+.overlay.open{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{width:min(400px,100%);background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:24px;position:relative;max-height:92vh;overflow-y:auto;animation:pop .22s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.94) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal .x{position:absolute;top:15px;right:15px;width:32px;height:32px;border-radius:50%;background:var(--bg2);color:var(--dim);display:grid;place-items:center;transition:.14s}
+.modal .x:hover{background:var(--red);color:#fff;transform:rotate(90deg)}
+.modal .iconwrap{color:var(--yellow);margin-bottom:6px}
+.modal h3{font-family:'Archivo',sans-serif;font-weight:800;font-size:24px;margin-top:8px}
+.modal .sub{color:var(--dim);font-size:13px;margin-bottom:18px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--dim);margin-bottom:6px;font-weight:500}
+.field input{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:12px 14px;font-size:14px;border-radius:14px;outline:none;transition:.15s}
+.field input:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(59,240,122,.14)}
+.classpick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.classpick input{display:none}
+.classpick span{display:block;text-align:center;padding:11px 6px;border:1px solid var(--line);border-radius:14px;font-size:13px;font-weight:600;color:var(--dim);cursor:pointer;transition:.14s;background:var(--bg2)}
+.classpick span:hover{border-color:var(--green)}
+.classpick input:checked + span{border-color:transparent;color:#0A0A0A;background:linear-gradient(100deg,var(--yellow),var(--green))}
+.drop{border:2px dashed var(--line);border-radius:16px;padding:16px;text-align:center;color:var(--dim);font-size:13px;cursor:pointer;transition:.14s;background:var(--bg2);display:flex;flex-direction:column;align-items:center;gap:8px}
+.drop:hover{border-color:var(--yellow);color:var(--txt)}
+.drop img{max-width:100%;max-height:150px;border-radius:12px;margin-top:6px;display:none}
+.modal .btn-main{font-size:15px;margin-top:8px}
+.msg{margin-top:10px;font-size:12px;min-height:15px;word-break:break-word;color:var(--red);text-align:center}
+
+/* ---------- status / confirmation ---------- */
+#status{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;position:relative;z-index:2}
+#status.show{display:flex}
+.tick{width:120px;height:120px;margin-bottom:8px;filter:drop-shadow(0 0 18px rgba(59,240,122,.55))}
+.tick circle{fill:none;stroke:var(--green);stroke-width:5;stroke-dasharray:322;stroke-dashoffset:322;animation:draw .6s ease forwards}
+.tick path{fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60;animation:draw .4s .5s ease forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#status h2{font-family:'Archivo',sans-serif;font-weight:800;font-size:30px;margin-top:6px}
+#status .lead{color:var(--green);font-weight:600;margin-top:2px}
+#status p{color:var(--dim);font-size:14px;margin-top:10px;max-width:36ch}
+#status .hint{margin-top:22px;font-size:12px;color:var(--dim);background:var(--card);border:1px solid var(--line);padding:10px 16px;border-radius:99px}
+#status .btn-ghost{margin-top:16px;background:var(--card);border:1px solid var(--line);color:var(--txt);padding:12px 24px;border-radius:99px;font-family:'Fredoka';font-weight:500;font-size:14px}
+#status .btn-ghost:hover{border-color:var(--green);color:var(--green)}
+
+/* ---------- dashboard + admin tables ---------- */
+.pill-lg{background:linear-gradient(100deg,var(--yellow),var(--green));color:#0A0A0A;font-size:11px;font-weight:600;padding:5px 12px;border-radius:99px}
+.btn-round{background:var(--card2);border:1px solid var(--line);color:var(--txt);padding:9px 18px;border-radius:99px;font-family:'Fredoka';font-weight:500;font-size:13px;transition:.14s;display:inline-flex;align-items:center;gap:7px}
+.btn-round:hover{border-color:var(--green);color:var(--green)}
+.wrap{max-width:1180px;margin:0 auto;padding:6px 22px 50px}
+.dashhead{text-align:center;margin-bottom:20px}
+.dashhead h2{font-family:'Archivo',sans-serif;font-weight:900;font-size:32px;letter-spacing:-.02em}
+.dashhead h2 .grad{background:linear-gradient(100deg,var(--yellow),var(--green) 55%,var(--red));-webkit-background-clip:text;background-clip:text;color:transparent}
+.dashhead p{color:var(--dim);font-size:13px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.stat{border-radius:var(--r);padding:18px;background:var(--card);border:1px solid var(--line);position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;right:-20px;top:-20px;width:70px;height:70px;border-radius:50%;filter:blur(30px);opacity:.5}
+.stat:nth-child(1)::after{background:var(--yellow)}.stat:nth-child(2)::after{background:var(--green)}
+.stat:nth-child(3)::after{background:var(--red)}.stat:nth-child(4)::after{background:var(--yellow)}
+.stat .n{font-family:'Fredoka';font-size:30px;font-weight:700;position:relative}
+.stat:nth-child(1) .n{color:var(--yellow)}.stat:nth-child(2) .n{color:var(--green)}
+.stat:nth-child(3) .n{color:var(--red)}.stat:nth-child(4) .n{color:var(--yellow)}
+.stat .l{font-size:12px;font-weight:500;color:var(--dim);margin-top:-2px;position:relative}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{background:var(--card);border:1px solid var(--line);color:var(--dim);padding:9px 18px;border-radius:99px;font-family:'Fredoka';font-weight:500;font-size:13px;transition:.14s}
+.tabs button.active{background:linear-gradient(100deg,var(--yellow),var(--green));color:#0A0A0A;border-color:transparent}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--rlg)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+th{text-align:left;padding:13px 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);white-space:nowrap;font-weight:600}
+td{padding:11px 14px;border-bottom:1px solid rgba(38,38,38,.6);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td img.av{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--bg2)}
+td img.car{width:62px;height:40px;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--line)}
+.empty{padding:30px;text-align:center;color:var(--dim)}
+.status-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.status-badge.pending{background:rgba(255,224,27,.15);color:var(--yellow)}
+.status-badge.approved{background:rgba(59,240,122,.15);color:var(--green)}
+.approveBtn{background:var(--green);color:#0A0A0A;font-family:'Fredoka';font-weight:600;font-size:12px;padding:6px 14px;border-radius:99px;transition:.14s}
+.approveBtn:hover{filter:brightness(1.08)}
+.approveBtn:disabled{opacity:.5;cursor:default}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:60;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:90vh;border-radius:14px}
+@media(max-width:820px){.split{grid-template-columns:1fr;overflow-y:auto}#site.show{height:auto;min-height:100vh}.playerpanel{min-height:300px}}
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<section id="gate">
+  <div class="traffic" aria-hidden="true">
+    <div class="tlight red" id="tl-red"></div>
+    <div class="tlight yellow" id="tl-yellow"></div>
+    <div class="tlight green" id="tl-green"></div>
+  </div>
+  <h1 class="fred">MYORTIEE<span class="grad">.COM</span></h1>
+  <p class="tag fred">Corsa Event</p>
+  <form class="gatecard" id="gateForm">
+    <label>Your name or username <b></b></label>
+    <input id="gateName" type="text" autocomplete="name" placeholder="Type your name…" required>
+    <button type="submit" class="btn-main btn-grad" id="gateBtn">Continue</button>
+    <div id="gateErr"></div>
+  </form>
+</section>
+
+<!-- SITE -->
+<div id="site" class="screen">
+  <nav class="nav">
+    <div class="logo">MYORTIEE<span>.COM</span></div>
+    <div class="navright">
+      <button class="bell" id="bell" onclick="toggleNotif()" title="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="badge" id="bellBadge">1</span>
+      </button>
+      <div class="notif" id="notif">
+        <div class="nhead"><b>Notifications</b><button class="nclose" onclick="closeNotif()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+        <div id="notifBody"><div class="nempty">You're all caught up</div></div>
+      </div>
+      <div class="who"><img id="whoAv" alt=""><b id="whoName"></b></div>
+    </div>
+  </nav>
+
+  <div class="split">
+    <!-- LEFT: roles -->
+    <div class="col">
+      <div class="colhead">
+        <span class="pill">Corsa Event</span>
+        <h2>REGISTER NOW</h2>
+        <p class="sub">Pick a role to sign up.</p>
+      </div>
+      <div class="rolelist">
+        <div class="rolecard" onclick="openForm('driver')">
+          <div class="iconwrap"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l1.5-4.5A2 2 0 018.4 7h7.2a2 2 0 011.9 1.5L19 13"/><path d="M3 13h18a1 1 0 011 1v3a1 1 0 01-1 1h-1"/><path d="M4 18H3a1 1 0 01-1-1v-3a1 1 0 011-1"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg></div>
+          <div class="rtext"><h3>DRIVER</h3><p>Bring your car to the strip.</p></div>
+          <span class="go">Sign up →</span>
+        </div>
+        <div class="rolecard" onclick="openForm('marshall')">
+          <div class="iconwrap"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4c3-1.5 5 1.5 8 0s5-1.5 5-1.5v9s-2 1.5-5 0-5 1.5-8 0"/></svg></div>
+          <div class="rtext"><h3>MARSHALL</h3><p>Run the event.</p></div>
+          <span class="go">Sign up →</span>
+        </div>
+        <div class="rolecard" onclick="openForm('safety_car')">
+          <div class="iconwrap"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 015 5v3l2 4v3H5v-3l2-4V7a5 5 0 015-5z"/><path d="M9 20a3 3 0 006 0"/></svg></div>
+          <div class="rtext"><h3>SAFETY CAR</h3><p>Keep it clean.</p></div>
+          <span class="go">Sign up →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: registered players -->
+    <div class="col">
+      <div class="colhead">
+        <span class="pill" style="background:rgba(255,224,27,.1);color:var(--yellow);border-color:rgba(255,224,27,.3)">On the grid</span>
+        <h2>REGISTERED</h2>
+        <p class="sub">Everyone approved for the event.</p>
+      </div>
+      <div class="playerpanel">
+        <div class="ptabs">
+          <button class="active" onclick="showPlayers('drivers',this)">Drivers</button>
+          <button onclick="showPlayers('marshalls',this)">Marshalls</button>
+          <button onclick="showPlayers('safety',this)">Safety</button>
+        </div>
+        <div class="plist" id="playerList"><div class="pempty">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS -->
+<section id="status">
+  <svg class="tick" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><path d="M28 52l14 14 30-32"/></svg>
+  <h2 id="statusTitle">Sign-up received</h2>
+  <p class="lead">Waiting for admin approval</p>
+  <p>Please wait for approval from the event admin. Log back in later with the same name to check your status.</p>
+  <div class="hint">You'll get a notification here once you're approved</div>
+  <button class="btn-ghost" onclick="location.reload()">Back to start</button>
+</section>
+
+<!-- DASHBOARD -->
+<div id="dash" class="screen">
+  <nav class="nav">
+    <div class="logo">MYORTIEE<span>.COM</span></div>
+    <div class="navright">
+      <button class="bell" id="bell2" onclick="toggleNotif('2')" title="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+        <span class="badge" id="bellBadge2">1</span>
+      </button>
+      <div class="notif" id="notif2">
+        <div class="nhead"><b>Notifications</b><button class="nclose" onclick="closeNotif('2')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+        <div id="notifBody2"><div class="nempty">You're all caught up</div></div>
+      </div>
+      <div class="who"><img id="whoAv2" alt=""><b id="whoName2"></b></div>
+    </div>
+  </nav>
+  <div class="wrap">
+    <div class="dashhead">
+      <span class="pill-lg" style="display:inline-block;margin-bottom:10px">✓ You're approved</span>
+      <h2>THE <span class="grad">GRID</span></h2>
+      <p>Everyone signed up for the Corsa Event</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n" id="dLogins">0</div><div class="l">Racers in</div></div>
+      <div class="stat"><div class="n" id="dDrivers">0</div><div class="l">Drivers</div></div>
+      <div class="stat"><div class="n" id="dMarshalls">0</div><div class="l">Marshalls</div></div>
+      <div class="stat"><div class="n" id="dSafety">0</div><div class="l">Safety cars</div></div>
+    </div>
+    <div class="tabs">
+      <button class="active" onclick="showDashTab('drivers',this)">Drivers</button>
+      <button onclick="showDashTab('marshalls',this)">Marshalls</button>
+      <button onclick="showDashTab('safety',this)">Safety cars</button>
+    </div>
+    <div class="tablewrap" id="dashTable"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <button class="x" onclick="closeForm()" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="screen">
+  <nav class="nav">
+    <div class="logo">MYORTIEE<span>.COM</span></div>
+    <span class="pill-lg" style="margin-left:8px">Race Control</span>
+    <button class="btn-round" style="margin-left:auto" onclick="loadAdmin()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0020.5 15"/></svg>Refresh</button>
+  </nav>
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="n" id="stLogins">0</div><div class="l">Logins</div></div>
+      <div class="stat"><div class="n" id="stDrivers">0</div><div class="l">Drivers</div></div>
+      <div class="stat"><div class="n" id="stMarshalls">0</div><div class="l">Marshalls</div></div>
+      <div class="stat"><div class="n" id="stSafety">0</div><div class="l">Safety cars</div></div>
+    </div>
+    <div class="tabs">
+      <button class="active" onclick="showTab('drivers',this)">Drivers</button>
+      <button onclick="showTab('marshalls',this)">Marshalls</button>
+      <button onclick="showTab('safety',this)">Safety cars</button>
+      <button onclick="showTab('logins',this)">Logins</button>
+    </div>
+    <div class="tablewrap" id="adminTable"></div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="this.style.display='none'"><img id="lightboxImg" alt=""></div>
+
+<script>
+const SB_URL="https://baxefjtopjuuuxrzvgbx.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGVmanRvcGp1dXV4cnp2Z2J4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjY5MTQsImV4cCI6MjA5NDk0MjkxNH0.6TvS1KopPXlGMkLQPqv8bAkVjE6ZItM1vjBL55vohj4";
+const H={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
+
+async function sbInsert(t,row){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:{...H,"Prefer":"return=representation"},body:JSON.stringify(row)});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Save failed (${r.status})${d?": "+d:""}`);}return (await r.json())[0];}
+async function sbSelect(t,q=""){const r=await fetch(`${SB_URL}/rest/v1/${t}?select=*${q}&order=created_at.desc`,{headers:H});if(!r.ok)throw new Error("Load failed ("+r.status+")");return r.json();}
+async function sbUpdate(t,id,patch){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"PATCH",headers:{...H,"Prefer":"return=representation"},body:JSON.stringify(patch)});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Update failed (${r.status})${d?": "+d:""}`);}return (await r.json())[0];}
+async function sbDelete(t,id){const r=await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:"DELETE",headers:H});if(!r.ok){let d="";try{d=(await r.json()).message||"";}catch(e){}throw new Error(`Delete failed (${r.status})${d?": "+d:""}`);}}
+
+const AVATAR_POOL=[1,156,261,913062,68465808,23415609,21557,80254,1179762,4416324,8368923,343,1210210,13645,2231221,111179700,159876990,29317340,52988,20048521];
+const fallbackAvatar=s=>`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(s)}&backgroundColor=111111`;
+async function assignAvatar(seed){try{const id=AVATAR_POOL[Math.floor(Math.random()*AVATAR_POOL.length)];const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),4000);const r=await fetch(`https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${id}&size=150x150&format=Png&isCircular=false`,{signal:ctrl.signal});clearTimeout(t);const d=await r.json();return d?.data?.[0]?.imageUrl||fallbackAvatar(seed);}catch(e){return fallbackAvatar(seed);}}
+
+let currentUser=null;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const show=id=>document.getElementById(id).classList.add("show");
+const hideAll=()=>document.querySelectorAll(".screen").forEach(s=>s.classList.remove("show"));
+
+/* traffic light sequence on load */
+(async function stage(){
+  await wait(400); document.getElementById("tl-red").classList.add("on");
+  await wait(650); document.getElementById("tl-yellow").classList.add("on");
+  await wait(650);
+  document.getElementById("tl-red").classList.remove("on");
+  document.getElementById("tl-yellow").classList.remove("on");
+  document.getElementById("tl-green").classList.add("on");
+})();
+
+/* ---------- LOGIN ---------- */
+document.getElementById("gateForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const name=document.getElementById("gateName").value.trim();
+  const btn=document.getElementById("gateBtn"),err=document.getElementById("gateErr");
+  if(!name)return;
+  btn.disabled=true;btn.textContent="Starting…";err.textContent="";
+  const isAdmin=name.toLowerCase()==="lunatic";
+  const avatar=await assignAvatar(name);
+  try{await sbInsert("gc_logins",{name,avatar_url:avatar,is_admin:isAdmin});}
+  catch(e2){err.textContent=e2.message+" — check your internet.";btn.disabled=false;btn.textContent="Continue";return;}
+  currentUser={name,avatar};
+  document.getElementById("gate").style.display="none";
+
+  if(isAdmin){show("admin");loadAdmin();window.scrollTo(0,0);return;}
+
+  let mine=[];
+  try{mine=await sbSelect("gc_registrations",`&real_name=ilike.${encodeURIComponent(name)}`);}catch(e3){}
+  const approved=mine.find(m=>m.status==="approved");
+
+  if(approved){
+    setUser("2");
+    setNotif("2",true,"Registration approved","You're cleared for the Corsa Event");
+    show("dash");window.scrollTo(0,0);
+    if(!approved.notified){try{await sbUpdate("gc_registrations",approved.id,{notified:true});}catch(e){}}
+    loadDash();
+  }else if(mine.length){
+    showStatus();
+  }else{
+    setUser("");
+    setNotif("",false);
+    show("site");loadPlayers();window.scrollTo(0,0);
+  }
+});
+function setUser(sfx){document.getElementById("whoName"+sfx).textContent=currentUser.name;document.getElementById("whoAv"+sfx).src=currentUser.avatar;}
+
+/* ---------- notifications ---------- */
+function setNotif(sfx,hasApproval,title,text){
+  const badge=document.getElementById("bellBadge"+sfx);
+  const body=document.getElementById("notifBody"+sfx);
+  if(hasApproval){
+    badge.classList.add("on");
+    body.innerHTML=`<div class="nitem"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span><b>${title}</b><small>${text}</small></span></div>`;
+  }else{
+    badge.classList.remove("on");
+    body.innerHTML=`<div class="nempty">You're all caught up</div>`;
+  }
+}
+function toggleNotif(sfx=""){const n=document.getElementById("notif"+sfx);n.classList.toggle("open");document.getElementById("bellBadge"+sfx).classList.remove("on");}
+function closeNotif(sfx=""){document.getElementById("notif"+sfx).classList.remove("open");}
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".navright")) document.querySelectorAll(".notif").forEach(n=>n.classList.remove("open"));
+});
+
+/* ---------- registered players (right panel) ---------- */
+let playersData=[], playersTab="drivers";
+async function loadPlayers(){
+  try{ playersData=await sbSelect("gc_registrations","&status=eq.approved"); renderPlayers(); }
+  catch(e){ document.getElementById("playerList").innerHTML='<div class="pempty">Could not load.</div>'; }
+}
+function showPlayers(tab,btn){playersTab=tab;btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderPlayers();}
+function renderPlayers(){
+  const list=document.getElementById("playerList");
+  const roleKey={drivers:"driver",marshalls:"marshall",safety:"safety_car"}[playersTab];
+  const rows=playersData.filter(r=>r.role===roleKey);
+  if(!rows.length){ list.innerHTML='<div class="pempty">No approved '+playersTab+' yet.<br>Be the first to sign up!</div>'; return; }
+  if(roleKey==="driver"){
+    list.innerHTML=rows.map(r=>`<div class="prow">
+      ${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:''}
+      <div class="pinfo"><b>${esc(r.car_name)}</b><small>${esc(r.roblox_username)} · ${esc(r.instagram_username)}</small></div>
+      <span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span>
+    </div>`).join("");
+  }else{
+    list.innerHTML=rows.map(r=>`<div class="prow">
+      <div class="pinfo"><b>${esc(r.roblox_username)}</b><small>${esc(r.instagram_username)}</small></div>
+    </div>`).join("");
+  }
+}
+
+/* ---------- forms ---------- */
+const ICONS={
+  driver:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l1.5-4.5A2 2 0 018.4 7h7.2a2 2 0 011.9 1.5L19 13"/><path d="M3 13h18a1 1 0 011 1v3a1 1 0 01-1 1h-1"/><path d="M4 18H3a1 1 0 01-1-1v-3a1 1 0 011-1"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>',
+  marshall:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4c3-1.5 5 1.5 8 0s5-1.5 5-1.5v9s-2 1.5-5 0-5 1.5-8 0"/></svg>',
+  safety_car:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 015 5v3l2 4v3H5v-3l2-4V7a5 5 0 015-5z"/><path d="M9 20a3 3 0 006 0"/></svg>'
+};
+const FORMS={driver:{title:"Driver entry",sub:"Bring your car to the strip.",car:true},marshall:{title:"Marshall sign-up",sub:"Help run the event.",car:false},safety_car:{title:"Safety car sign-up",sub:"Keep the strip clean.",car:false}};
+let carPhotoData=null;
+
+function openForm(role){
+  const f=FORMS[role];carPhotoData=null;
+  const classBlock=f.car?`
+    <div class="field"><label>Car</label><input name="car" required placeholder="e.g. Skyline GT-R"></div>
+    <div class="field"><label>Class</label>
+      <div class="classpick">
+        <label><input type="radio" name="class" value="Hypercar" required><span>Hypercar</span></label>
+        <label><input type="radio" name="class" value="Sports Car"><span>Sports Car</span></label>
+        <label><input type="radio" name="class" value="EV"><span>EV</span></label>
+        <label><input type="radio" name="class" value="Classic"><span>Classic</span></label>
+      </div>
+    </div>
+    <div class="field"><label>Car photo</label>
+      <div class="drop" id="dropZone">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        <span id="dropText">Tap to upload a photo</span><img id="carPreview" alt="">
+      </div>
+      <input type="file" id="carPhoto" accept="image/*" hidden>
+    </div>`:"";
+  document.getElementById("modalBody").innerHTML=`
+    <div class="iconwrap">${ICONS[role]}</div>
+    <h3>${f.title}</h3>
+    <p class="sub">${f.sub}</p>
+    <form id="regForm">
+      <div class="field"><label>Roblox username</label><input name="roblox" required placeholder="Roblox username"></div>
+      <div class="field"><label>Instagram username</label><input name="instagram" required placeholder="@yourhandle"></div>
+      ${classBlock}
+      <button type="submit" class="btn-main btn-grad">Submit</button>
+      <div class="msg" id="regMsg"></div>
+    </form>`;
+  if(f.car)wireDrop();
+  document.getElementById("regForm").addEventListener("submit",e=>submitReg(e,role));
+  document.getElementById("overlay").classList.add("open");
+}
+function closeForm(){document.getElementById("overlay").classList.remove("open");}
+document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeForm();});
+function wireDrop(){
+  const dz=document.getElementById("dropZone"),fi=document.getElementById("carPhoto");
+  dz.addEventListener("click",()=>fi.click());
+  fi.addEventListener("change",()=>{
+    const file=fi.files[0];if(!file)return;
+    const img=new Image();
+    img.onload=()=>{const max=900;let w=img.width,h=img.height;if(w>max){h=h*max/w;w=max;}const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);carPhotoData=c.toDataURL("image/jpeg",.8);const p=document.getElementById("carPreview");p.src=carPhotoData;p.style.display="inline-block";document.getElementById("dropText").textContent="Tap to change";};
+    img.src=URL.createObjectURL(file);
+  });
+}
+async function submitReg(e,role){
+  e.preventDefault();
+  const form=e.target,msg=document.getElementById("regMsg"),btn=form.querySelector(".btn-main");
+  msg.textContent="";
+  const row={role,real_name:currentUser?.name||null,roblox_username:form.roblox.value.trim(),instagram_username:form.instagram.value.trim(),status:"pending"};
+  if(role==="driver"){row.car_name=form.car.value.trim();row.car_class=form.querySelector('input[name="class"]:checked')?.value||null;if(!row.car_class){msg.textContent="Pick a class.";return;}if(!carPhotoData){msg.textContent="Add a car photo.";return;}row.car_photo=carPhotoData;}
+  btn.disabled=true;btn.textContent="Sending…";
+  try{await sbInsert("gc_registrations",row);closeForm();showStatus();}
+  catch(err){btn.disabled=false;btn.textContent="Submit";msg.textContent=err.message;}
+}
+
+/* ---------- status ---------- */
+function showStatus(){
+  document.getElementById("gate").style.display="none";hideAll();
+  const s=document.getElementById("status");s.style.display="flex";
+  s.querySelectorAll(".tick circle,.tick path").forEach(el=>{el.style.animation="none";void el.offsetWidth;el.style.animation="";});
+  window.scrollTo(0,0);
+}
+
+/* ---------- dashboard ---------- */
+let dashData={logins:[],regs:[]},dashTab="drivers";
+async function loadDash(){
+  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations","&status=eq.approved")]);dashData={logins,regs};
+    document.getElementById("dLogins").textContent=logins.length;
+    document.getElementById("dDrivers").textContent=regs.filter(r=>r.role==="driver").length;
+    document.getElementById("dMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
+    document.getElementById("dSafety").textContent=regs.filter(r=>r.role==="safety_car").length;
+    renderDash();
+  }catch(e){document.getElementById("dashTable").innerHTML='<div class="empty">'+e.message+'</div>';}
+}
+function showDashTab(tab,btn){dashTab=tab;btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderDash();}
+function renderDash(){
+  const wrap=document.getElementById("dashTable");
+  const roleKey={drivers:"driver",marshalls:"marshall",safety:"safety_car"}[dashTab];
+  const rows=dashData.regs.filter(r=>r.role===roleKey);
+  if(!rows.length){wrap.innerHTML='<div class="empty">No approved '+dashTab+' yet.</div>';return;}
+  if(roleKey==="driver"){
+    wrap.innerHTML=`<table><tr><th>Car</th><th>Driver</th><th>Class</th><th>Roblox</th><th>Instagram</th></tr>`+rows.map(r=>`<tr><td>${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:"—"}</td><td>${esc(r.car_name)}</td><td><span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td></tr>`).join("")+`</table>`;
+  }else{
+    wrap.innerHTML=`<table><tr><th>Roblox</th><th>Instagram</th><th>Name</th></tr>`+rows.map(r=>`<tr><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td></tr>`).join("")+`</table>`;
+  }
+}
+
+/* ---------- admin ---------- */
+let adminData={logins:[],regs:[]},currentTab="drivers";
+async function loadAdmin(){
+  const wrap=document.getElementById("adminTable");wrap.innerHTML='<div class="empty">Loading…</div>';
+  try{const [logins,regs]=await Promise.all([sbSelect("gc_logins"),sbSelect("gc_registrations")]);adminData={logins,regs};
+    document.getElementById("stLogins").textContent=logins.length;
+    document.getElementById("stDrivers").textContent=regs.filter(r=>r.role==="driver").length;
+    document.getElementById("stMarshalls").textContent=regs.filter(r=>r.role==="marshall").length;
+    document.getElementById("stSafety").textContent=regs.filter(r=>r.role==="safety_car").length;
+    renderTab();
+  }catch(e){wrap.innerHTML='<div class="empty">'+e.message+'</div>';}
+}
+function showTab(tab,btn){currentTab=tab;btn.parentNode.querySelectorAll("button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderTab();}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=t=>new Date(t).toLocaleString();
+async function approve(id,btn){
+  btn.disabled=true;btn.textContent="Approving…";
+  try{await sbUpdate("gc_registrations",id,{status:"approved",approved_at:new Date().toISOString(),notified:false});const reg=adminData.regs.find(r=>r.id===id);if(reg)reg.status="approved";renderTab();}
+  catch(e){btn.disabled=false;btn.textContent="Approve";alert(e.message);}
+}
+async function delReg(id,btn){
+  if(!confirm("Delete this registration? This can't be undone."))return;
+  btn.disabled=true;
+  try{await sbDelete("gc_registrations",id);adminData.regs=adminData.regs.filter(r=>r.id!==id);
+    document.getElementById("stDrivers").textContent=adminData.regs.filter(r=>r.role==="driver").length;
+    document.getElementById("stMarshalls").textContent=adminData.regs.filter(r=>r.role==="marshall").length;
+    document.getElementById("stSafety").textContent=adminData.regs.filter(r=>r.role==="safety_car").length;
+    renderTab();}
+  catch(e){btn.disabled=false;alert(e.message);}
+}
+async function delLogin(id,btn){
+  if(!confirm("Delete this login record?"))return;
+  btn.disabled=true;
+  try{await sbDelete("gc_logins",id);adminData.logins=adminData.logins.filter(r=>r.id!==id);
+    document.getElementById("stLogins").textContent=adminData.logins.length;renderTab();}
+  catch(e){btn.disabled=false;alert(e.message);}
+}
+const delBtn=id=>`<button class="delBtn" onclick="delReg('${id}',this)" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/><path d="M10 11v6M14 11v6"/></svg></button>`;
+function renderTab(){
+  const wrap=document.getElementById("adminTable");
+  if(currentTab==="logins"){
+    const rows=adminData.logins;if(!rows.length){wrap.innerHTML='<div class="empty">No logins yet.</div>';return;}
+    wrap.innerHTML=`<table><tr><th></th><th>Name</th><th>Admin</th><th>Logged in</th><th></th></tr>`+rows.map(r=>`<tr><td><img class="av" src="${esc(r.avatar_url)}"></td><td>${esc(r.name)}</td><td>${r.is_admin?'<span class="status-badge approved">Admin</span>':''}</td><td>${fmt(r.created_at)}</td><td><button class="delBtn" onclick="delLogin('${r.id}',this)" title="Delete"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/><path d="M10 11v6M14 11v6"/></svg></button></td></tr>`).join("")+`</table>`;return;
+  }
+  const roleKey={drivers:"driver",marshalls:"marshall",safety:"safety_car"}[currentTab];
+  const rows=adminData.regs.filter(r=>r.role===roleKey);
+  if(!rows.length){wrap.innerHTML='<div class="empty">Nothing here yet.</div>';return;}
+  const action=r=>r.status==="approved"?`<span class="status-badge approved">Approved</span>`:`<button class="approveBtn" onclick="approve('${r.id}',this)">Approve</button>`;
+  if(roleKey==="driver"){
+    wrap.innerHTML=`<table><tr><th>Car</th><th>Name</th><th>Class</th><th>Roblox</th><th>Instagram</th><th>Real name</th><th>Status</th></tr>`+rows.map(r=>`<tr><td>${r.car_photo?`<img class="car" src="${r.car_photo}" onclick="zoom(this.src)">`:"—"}</td><td>${esc(r.car_name)}</td><td><span class="tbadge ${esc((r.car_class||'').replace(' ',''))}">${esc(r.car_class)}</span></td><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td><td>${action(r)}</td></tr>`).join("")+`</table>`;
+  }else{
+    wrap.innerHTML=`<table><tr><th>Roblox</th><th>Instagram</th><th>Real name</th><th>When</th><th>Status</th></tr>`+rows.map(r=>`<tr><td>${esc(r.roblox_username)}</td><td>${esc(r.instagram_username)}</td><td>${esc(r.real_name)}</td><td>${fmt(r.created_at)}</td><td>${action(r)}</td></tr>`).join("")+`</table>`;
+  }
+}
+function zoom(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightbox").style.display="flex";}
+</script>
+</body>
+</html>
